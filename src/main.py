@@ -1,4 +1,5 @@
 import os
+import pathlib
 import shutil
 
 from block_markdown import markdown_to_html_node
@@ -13,7 +14,7 @@ def main():
     
     print("Copying static files to public directory")
     copy_content(static_dir, public_dir)
-    generate_page("./content/index.md", "./template.html", "./public/index.html")
+    generate_pages_recursive("./content", "./template.html", "./public")
 
 def copy_content(source_dir, target_dir):
     if not os.path.exists(target_dir):
@@ -57,6 +58,18 @@ def generate_page(from_path, template_path, dest_path):
         os.makedirs(dest_path_dir)
     with open(dest_path, "w") as dest_file:
         dest_file.write(template_content)
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    for file in os.listdir(dir_path_content):
+        file_path = os.path.join(dir_path_content, file)
+        dest_path = os.path.join(dest_dir_path, file)
+        if os.path.isfile(file_path):
+            path = pathlib.Path(file_path)
+            if path.suffix == ".md":
+                dest_path = dest_path.replace(".md", ".html")
+                generate_page(file_path, template_path, dest_path)
+        else:
+            generate_pages_recursive(file_path, template_path, dest_path)  
 
 if __name__ == '__main__':
     main()
